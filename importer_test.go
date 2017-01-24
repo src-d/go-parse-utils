@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const project = "srcd.works/go-parse-utils.v1"
+const project = "gopkg.in/src-d/go-parse-utils.v1"
 
 var projectPath = filepath.Join(goSrc, project)
 

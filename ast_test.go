@@ -7,7 +7,7 @@ import (
 )
 
 func TestPackageAST(t *testing.T) {
-	pkg, err := PackageAST("srcd.works/go-parse-utils.v1")
+	pkg, err := PackageAST(project)
 	require.Nil(t, err)
 	require.Equal(t, "parseutil", pkg.Name)
 }
