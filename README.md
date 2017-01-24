@@ -2,12 +2,12 @@
 
 `go-parse-utils` is a collection of utilities for parsing code easily.
 
-[![GoDoc](https://godoc.org/srcd.works/go-parse-utils.v1?status.svg)](https://godoc.org/srcd.works/go-parse-utils.v1) [![Build Status](https://travis-ci.org/src-d/go-parse-utils.svg?branch=master)](https://travis-ci.org/src-d/go-parse-utils) [![codecov](https://codecov.io/gh/src-d/go-parse-utils/branch/master/graph/badge.svg)](https://codecov.io/gh/src-d/proteus) [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org) [![Go Report Card](https://goreportcard.com/badge/srcd.works/go-parse-utils.v1)](https://goreportcard.com/report/srcd.works/go-parse-utils.v1) 
+[![GoDoc](https://godoc.org/gopkg.in/src-d/go-parse-utils.v1?status.svg)](https://godoc.org/srcd.works/go-parse-utils.v1) [![Build Status](https://travis-ci.org/src-d/go-parse-utils.svg?branch=master)](https://travis-ci.org/src-d/go-parse-utils) [![codecov](https://codecov.io/gh/src-d/go-parse-utils/branch/master/graph/badge.svg)](https://codecov.io/gh/src-d/go-parse-utils) [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org) [![Go Report Card](https://goreportcard.com/badge/srcd.works/go-parse-utils.v1)](https://goreportcard.com/report/srcd.works/go-parse-utils.v1) 
 
 ### Install
 
 ```
-go get srcd.works/go-parse-utils.v1
+go get gopkg.in/src-d/go-parse-utils.v1
 ```
 
 ### Package AST

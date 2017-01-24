@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const project = "srcd.works/go-parse-utils.v1"
+const project = "gopkg.in/src-d/go-parse-utils.v1"
 
 var projectPath = filepath.Join(goSrc, project)
 
@@ -40,7 +40,7 @@ func TestParseSourceFiles(t *testing.T) {
 
 func TestImport(t *testing.T) {
 	imp := NewImporter()
-	pkg, err := imp.ImportFrom("srcd.works/go-parse-utils.v1", goSrc, 0)
+	pkg, err := imp.ImportFrom(project, goSrc, 0)
 	require.Nil(t, err)
 	require.Equal(t, "parseutil", pkg.Name())
 }
