@@ -77,6 +77,8 @@ func (i *Importer) Import(path string) (*types.Package, error) {
 	return i.ImportWithFilters(path, FileFilters{})
 }
 
+// ImportWithFilters works like Import but filtering the source files to parse using
+// the passed FileFilters.
 func (i *Importer) ImportWithFilters(path string, filters FileFilters) (*types.Package, error) {
 	return i.ImportFrom(path, goSrc, 0, filters)
 }
@@ -88,6 +90,12 @@ func (i *Importer) ImportWithFilters(path string, filters FileFilters) (*types.P
 // Two calls to ImportFrom with the same path and srcDir return
 // the same package.
 func (i *Importer) ImportFrom(path, srcDir string, mode types.ImportMode, filters FileFilters) (*types.Package, error) {
+	return i.ImportFromWithFilters(path, srcDir, mode, FileFilters{})
+}
+
+// ImportFromWithFilters works like ImportFrom but filters the source files using
+// the passed FileFilters.
+func (i *Importer) ImportFromWithFilters(path, srcDir string, mode types.ImportMode, filters FileFilters) (*types.Package, error) {
 	fullPath := filepath.Join(srcDir, path)
 	i.mut.Lock()
 	if pkg, ok := i.cache[fullPath]; ok {
