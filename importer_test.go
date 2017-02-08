@@ -43,7 +43,6 @@ func TestImport(t *testing.T) {
 	pkg, err := imp.Import(project)
 	require.Nil(t, err)
 	require.Equal(t, "parseutil", pkg.Name())
-	require.NotNil(t, pkg.Scope().Lookup("FileType"), "finds an object in importer.go")
 }
 
 func TestImportWithFilters(t *testing.T) {
