@@ -40,6 +40,24 @@ func TestParseSourceFiles(t *testing.T) {
 
 func TestImport(t *testing.T) {
 	imp := NewImporter()
+	pkg, err := imp.Import(project)
+	require.Nil(t, err)
+	require.Equal(t, "parseutil", pkg.Name())
+	require.NotNil(t, pkg.Scope().Lookup("FileType"), "finds an object in importer.go")
+}
+
+func TestImportWithFilters(t *testing.T) {
+	imp := NewImporter()
+	_, err := imp.ImportWithFilters(project, FileFilters{
+		func(pkgPath, file string, typ FileType) bool {
+			return file != "importer.go"
+		},
+	})
+	require.NotNil(t, err, "excluding importer.go makes package unimportable")
+}
+
+func TestImportFrom(t *testing.T) {
+	imp := NewImporter()
 	pkg, err := imp.ImportFrom(project, goSrc, 0)
 	require.Nil(t, err)
 	require.Equal(t, "parseutil", pkg.Name())

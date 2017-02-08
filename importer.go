@@ -19,9 +19,13 @@ var (
 	goSrc  = filepath.Join(goPath, "src")
 )
 
+// FileFilter returns true if the given file needs to be kept.
 type FileFilter func(pkgPath, file string, typ FileType) bool
+
+// FileFilters represent a colection of FileFilter
 type FileFilters []FileFilter
 
+// KeepFile returns true if and only if the file passes all FileFilters.
 func (fs FileFilters) KeepFile(pkgPath, file string, typ FileType) bool {
 	for _, f := range fs {
 		if !f(pkgPath, file, typ) {
@@ -32,6 +36,7 @@ func (fs FileFilters) KeepFile(pkgPath, file string, typ FileType) bool {
 	return true
 }
 
+// Filter returns the files passed in files that satisfy all FileFilters.
 func (fs FileFilters) Filter(pkgPath string, files []string, typ FileType) (filtered []string) {
 	for _, f := range files {
 		if fs.KeepFile(pkgPath, f, typ) {
@@ -41,6 +46,7 @@ func (fs FileFilters) Filter(pkgPath string, files []string, typ FileType) (filt
 	return
 }
 
+// FileType represents the type of go source file type.
 type FileType string
 
 const (
