@@ -19,6 +19,41 @@ var (
 	goSrc  = filepath.Join(goPath, "src")
 )
 
+// FileFilter returns true if the given file needs to be kept.
+type FileFilter func(pkgPath, file string, typ FileType) bool
+
+// FileFilters represent a colection of FileFilter
+type FileFilters []FileFilter
+
+// KeepFile returns true if and only if the file passes all FileFilters.
+func (fs FileFilters) KeepFile(pkgPath, file string, typ FileType) bool {
+	for _, f := range fs {
+		if !f(pkgPath, file, typ) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Filter returns the files passed in files that satisfy all FileFilters.
+func (fs FileFilters) Filter(pkgPath string, files []string, typ FileType) (filtered []string) {
+	for _, f := range files {
+		if fs.KeepFile(pkgPath, f, typ) {
+			filtered = append(filtered, f)
+		}
+	}
+	return
+}
+
+// FileType represents the type of go source file type.
+type FileType string
+
+const (
+	GoFile  FileType = "go"
+	CgoFile FileType = "cgo"
+)
+
 // Importer is an implementation of `types.Importer` and `types.ImporterFrom`
 // that builds actual source files and not the compiled objects in the pkg
 // directory.
@@ -45,7 +80,13 @@ func NewImporter() *Importer {
 // Two calls to Import with the same path return the same
 // package.
 func (i *Importer) Import(path string) (*types.Package, error) {
-	return i.ImportFrom(path, goSrc, 0)
+	return i.ImportWithFilters(path, FileFilters{})
+}
+
+// ImportWithFilters works like Import but filtering the source files to parse using
+// the passed FileFilters.
+func (i *Importer) ImportWithFilters(path string, filters FileFilters) (*types.Package, error) {
+	return i.ImportFromWithFilters(path, goSrc, 0, filters)
 }
 
 // ImportFrom returns the imported package for the given import
@@ -55,6 +96,12 @@ func (i *Importer) Import(path string) (*types.Package, error) {
 // Two calls to ImportFrom with the same path and srcDir return
 // the same package.
 func (i *Importer) ImportFrom(path, srcDir string, mode types.ImportMode) (*types.Package, error) {
+	return i.ImportFromWithFilters(path, srcDir, mode, FileFilters{})
+}
+
+// ImportFromWithFilters works like ImportFrom but filters the source files using
+// the passed FileFilters.
+func (i *Importer) ImportFromWithFilters(path, srcDir string, mode types.ImportMode, filters FileFilters) (*types.Package, error) {
 	fullPath := filepath.Join(srcDir, path)
 	i.mut.Lock()
 	if pkg, ok := i.cache[fullPath]; ok {
@@ -63,7 +110,7 @@ func (i *Importer) ImportFrom(path, srcDir string, mode types.ImportMode) (*type
 	}
 	i.mut.Unlock()
 
-	root, files, err := i.getSourceFiles(path, srcDir)
+	root, files, err := i.getSourceFiles(path, srcDir, filters)
 	if err != nil {
 		return nil, err
 	}
@@ -87,6 +134,7 @@ func (i *Importer) ImportFrom(path, srcDir string, mode types.ImportMode) (*type
 		}
 
 		i.cache[fullPath] = pkg
+
 		return pkg, nil
 	}
 
@@ -101,15 +149,15 @@ func (i *Importer) ImportFrom(path, srcDir string, mode types.ImportMode) (*type
 	return pkg, nil
 }
 
-func (i *Importer) getSourceFiles(path, srcDir string) (string, []string, error) {
+func (i *Importer) getSourceFiles(path, srcDir string, filters FileFilters) (string, []string, error) {
 	pkg, err := build.Import(path, srcDir, 0)
 	if err != nil {
 		return "", nil, err
 	}
 
 	var filenames []string
-	filenames = append(filenames, pkg.GoFiles...)
-	filenames = append(filenames, pkg.CgoFiles...)
+	filenames = append(filenames, filters.Filter(path, pkg.GoFiles, GoFile)...)
+	filenames = append(filenames, filters.Filter(path, pkg.CgoFiles, CgoFile)...)
 
 	if len(filenames) == 0 {
 		return "", nil, fmt.Errorf("no go source files in path: %s", path)
