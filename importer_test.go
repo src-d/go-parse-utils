@@ -40,7 +40,7 @@ func TestParseSourceFiles(t *testing.T) {
 
 func TestImport(t *testing.T) {
 	imp := NewImporter()
-	pkg, err := imp.ImportFrom(project, goSrc, 0, FileFilters{})
+	pkg, err := imp.ImportFrom(project, goSrc, 0)
 	require.Nil(t, err)
 	require.Equal(t, "parseutil", pkg.Name())
 }
