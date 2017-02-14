@@ -102,9 +102,8 @@ func (i *Importer) ImportFrom(path, srcDir string, mode types.ImportMode) (*type
 // ImportFromWithFilters works like ImportFrom but filters the source files using
 // the passed FileFilters.
 func (i *Importer) ImportFromWithFilters(path, srcDir string, mode types.ImportMode, filters FileFilters) (*types.Package, error) {
-	fullPath := filepath.Join(srcDir, path)
 	i.mut.Lock()
-	if pkg, ok := i.cache[fullPath]; ok {
+	if pkg, ok := i.cache[path]; ok {
 		i.mut.Unlock()
 		return pkg, nil
 	}
@@ -133,7 +132,7 @@ func (i *Importer) ImportFromWithFilters(path, srcDir string, mode types.ImportM
 			return nil, err
 		}
 
-		i.cache[fullPath] = pkg
+		i.cache[path] = pkg
 
 		return pkg, nil
 	}
@@ -144,7 +143,7 @@ func (i *Importer) ImportFromWithFilters(path, srcDir string, mode types.ImportM
 	}
 
 	i.mut.Lock()
-	i.cache[fullPath] = pkg
+	i.cache[path] = pkg
 	i.mut.Unlock()
 	return pkg, nil
 }
