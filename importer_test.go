@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	_ "google.golang.org/grpc"
 )
 
 const project = "gopkg.in/src-d/go-parse-utils.v1"
