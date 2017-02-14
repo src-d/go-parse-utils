@@ -55,6 +55,12 @@ func TestImportWithFilters(t *testing.T) {
 	require.NotNil(t, err, "excluding importer.go makes package unimportable")
 }
 
+func TestImportGoogleGrpc(t *testing.T) {
+	imp := NewImporter()
+	_, err := imp.Import("google.golang.org/grpc")
+	require.Nil(t, err, "should be able to import this. Was a bug")
+}
+
 func TestImportFrom(t *testing.T) {
 	imp := NewImporter()
 	pkg, err := imp.ImportFrom(project, goSrc, 0)
