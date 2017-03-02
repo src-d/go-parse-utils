@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	_ "google.golang.org/grpc"
 )
 
 const project = "gopkg.in/src-d/go-parse-utils.v1"
@@ -53,6 +55,12 @@ func TestImportWithFilters(t *testing.T) {
 		},
 	})
 	require.NotNil(t, err, "excluding importer.go makes package unimportable")
+}
+
+func TestImportGoogleGrpc(t *testing.T) {
+	imp := NewImporter()
+	_, err := imp.Import("google.golang.org/grpc")
+	require.Nil(t, err, "should be able to import this. Was a bug")
 }
 
 func TestImportFrom(t *testing.T) {
