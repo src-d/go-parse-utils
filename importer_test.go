@@ -16,7 +16,7 @@ func projectFile(path string) string {
 }
 
 func TestGetSourceFiles(t *testing.T) {
-	_, paths, err := NewImporter().getSourceFiles(project, goPath)
+	_, paths, err := NewImporter().getSourceFiles(project, goPath, FileFilters{})
 	require.Nil(t, err)
 	expected := []string{
 		projectFile("ast.go"),
@@ -40,7 +40,43 @@ func TestParseSourceFiles(t *testing.T) {
 
 func TestImport(t *testing.T) {
 	imp := NewImporter()
+	pkg, err := imp.Import(project)
+	require.Nil(t, err)
+	require.Equal(t, "parseutil", pkg.Name())
+}
+
+func TestImportWithFilters(t *testing.T) {
+	imp := NewImporter()
+	_, err := imp.ImportWithFilters(project, FileFilters{
+		func(pkgPath, file string, typ FileType) bool {
+			return file != "importer.go"
+		},
+	})
+	require.NotNil(t, err, "excluding importer.go makes package unimportable")
+}
+
+func TestImportFrom(t *testing.T) {
+	imp := NewImporter()
 	pkg, err := imp.ImportFrom(project, goSrc, 0)
 	require.Nil(t, err)
 	require.Equal(t, "parseutil", pkg.Name())
+}
+
+func TestFileFilters(t *testing.T) {
+	fs := FileFilters{
+		func(pkgPath, file string, typ FileType) bool {
+			return pkgPath == "a"
+		},
+		func(pkgPath, file string, typ FileType) bool {
+			return file == "a"
+		},
+		func(pkgPath, file string, typ FileType) bool {
+			return typ == GoFile
+		},
+	}
+
+	require.True(t, fs.KeepFile("a", "a", GoFile))
+	require.False(t, fs.KeepFile("b", "a", GoFile))
+	require.False(t, fs.KeepFile("a", "b", GoFile))
+	require.False(t, fs.KeepFile("a", "a", CgoFile))
 }
