@@ -109,7 +109,7 @@ func (i *Importer) ImportFromWithFilters(path, srcDir string, mode types.ImportM
 	}
 	i.mut.Unlock()
 
-	root, files, err := i.getSourceFiles(path, srcDir, filters)
+	root, files, err := i.GetSourceFiles(path, srcDir, filters)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +137,7 @@ func (i *Importer) ImportFromWithFilters(path, srcDir string, mode types.ImportM
 		return pkg, nil
 	}
 
-	pkg, err := i.parseSourceFiles(root, files)
+	pkg, err := i.ParseSourceFiles(root, files)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +148,8 @@ func (i *Importer) ImportFromWithFilters(path, srcDir string, mode types.ImportM
 	return pkg, nil
 }
 
-func (i *Importer) getSourceFiles(path, srcDir string, filters FileFilters) (string, []string, error) {
+// GetSourceFiles return the go files available in src under path after applying the filters.
+func (i *Importer) GetSourceFiles(path, srcDir string, filters FileFilters) (string, []string, error) {
 	pkg, err := build.Import(path, srcDir, 0)
 	if err != nil {
 		return "", nil, err
@@ -170,7 +171,9 @@ func (i *Importer) getSourceFiles(path, srcDir string, filters FileFilters) (str
 	return pkg.Dir, paths, nil
 }
 
-func (i *Importer) parseSourceFiles(root string, paths []string) (*types.Package, error) {
+// ParseSourceFiles parses the files in paths under root returning a types.Package
+// and an optional error
+func (i *Importer) ParseSourceFiles(root string, paths []string) (*types.Package, error) {
 	var files []*ast.File
 	fs := token.NewFileSet()
 	for _, p := range paths {
