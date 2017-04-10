@@ -1,15 +1,22 @@
-package parseutil
+package parseutil_test
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"gopkg.in/src-d/go-parse-utils.v1"
 
+	"github.com/stretchr/testify/require"
 	_ "google.golang.org/grpc"
 )
 
 const project = "gopkg.in/src-d/go-parse-utils.v1"
+
+var (
+	goPath = os.Getenv("GOPATH")
+	goSrc  = filepath.Join(goPath, "src")
+)
 
 var projectPath = filepath.Join(goSrc, project)
 
@@ -18,7 +25,7 @@ func projectFile(path string) string {
 }
 
 func TestGetSourceFiles(t *testing.T) {
-	_, paths, err := NewImporter().getSourceFiles(project, goPath, FileFilters{})
+	_, paths, err := parseutil.NewImporter().GetSourceFiles(project, goPath, parseutil.FileFilters{})
 	require.Nil(t, err)
 	expected := []string{
 		projectFile("ast.go"),
@@ -34,23 +41,23 @@ func TestParseSourceFiles(t *testing.T) {
 		projectFile("importer.go"),
 	}
 
-	pkg, err := NewImporter().parseSourceFiles(projectPath, paths)
+	pkg, err := parseutil.NewImporter().ParseSourceFiles(projectPath, paths)
 	require.Nil(t, err)
 
 	require.Equal(t, "parseutil", pkg.Name())
 }
 
 func TestImport(t *testing.T) {
-	imp := NewImporter()
+	imp := parseutil.NewImporter()
 	pkg, err := imp.Import(project)
 	require.Nil(t, err)
 	require.Equal(t, "parseutil", pkg.Name())
 }
 
 func TestImportWithFilters(t *testing.T) {
-	imp := NewImporter()
-	_, err := imp.ImportWithFilters(project, FileFilters{
-		func(pkgPath, file string, typ FileType) bool {
+	imp := parseutil.NewImporter()
+	_, err := imp.ImportWithFilters(project, parseutil.FileFilters{
+		func(pkgPath, file string, typ parseutil.FileType) bool {
 			return file != "importer.go"
 		},
 	})
@@ -58,33 +65,33 @@ func TestImportWithFilters(t *testing.T) {
 }
 
 func TestImportGoogleGrpc(t *testing.T) {
-	imp := NewImporter()
+	imp := parseutil.NewImporter()
 	_, err := imp.Import("google.golang.org/grpc")
 	require.Nil(t, err, "should be able to import this. Was a bug")
 }
 
 func TestImportFrom(t *testing.T) {
-	imp := NewImporter()
+	imp := parseutil.NewImporter()
 	pkg, err := imp.ImportFrom(project, goSrc, 0)
 	require.Nil(t, err)
 	require.Equal(t, "parseutil", pkg.Name())
 }
 
 func TestFileFilters(t *testing.T) {
-	fs := FileFilters{
-		func(pkgPath, file string, typ FileType) bool {
+	fs := parseutil.FileFilters{
+		func(pkgPath, file string, typ parseutil.FileType) bool {
 			return pkgPath == "a"
 		},
-		func(pkgPath, file string, typ FileType) bool {
+		func(pkgPath, file string, typ parseutil.FileType) bool {
 			return file == "a"
 		},
-		func(pkgPath, file string, typ FileType) bool {
-			return typ == GoFile
+		func(pkgPath, file string, typ parseutil.FileType) bool {
+			return typ == parseutil.GoFile
 		},
 	}
 
-	require.True(t, fs.KeepFile("a", "a", GoFile))
-	require.False(t, fs.KeepFile("b", "a", GoFile))
-	require.False(t, fs.KeepFile("a", "b", GoFile))
-	require.False(t, fs.KeepFile("a", "a", CgoFile))
+	require.True(t, fs.KeepFile("a", "a", parseutil.GoFile))
+	require.False(t, fs.KeepFile("b", "a", parseutil.GoFile))
+	require.False(t, fs.KeepFile("a", "b", parseutil.GoFile))
+	require.False(t, fs.KeepFile("a", "a", parseutil.CgoFile))
 }
