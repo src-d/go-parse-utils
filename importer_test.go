@@ -75,9 +75,9 @@ func TestImportGoogleGrpc(t *testing.T) {
 
 func TestImportFrom(t *testing.T) {
 	imp := parseutil.NewImporter()
-	pkg, err := imp.ImportFrom(project, "", 0)
+	pkg, err := imp.ImportFrom("vendoredPkg", "_testdata", 0)
 	require.Nil(t, err)
-	require.Equal(t, "parseutil", pkg.Name())
+	require.Equal(t, "vendoredPkg", pkg.Name())
 }
 
 func TestFileFilters(t *testing.T) {
