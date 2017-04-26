@@ -8,6 +8,9 @@ matrix:
     allow_failures:
         - go: tip
 
+env:
+  - GOPATH=/tmp/whatever:$GOPATH
+
 install:
   - rm -rf $GOPATH/src/gopkg.in/src-d
   - mkdir -p $GOPATH/src/gopkg.in/src-d
