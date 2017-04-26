@@ -150,6 +150,10 @@ func (i *Importer) ImportFromWithFilters(path, srcDir string, mode types.ImportM
 
 // GetSourceFiles return the go files available in src under path after applying the filters.
 func (i *Importer) GetSourceFiles(path, srcDir string, filters FileFilters) (string, []string, error) {
+	srcDir, err := filepath.Abs(srcDir)
+	if err != nil {
+		return "", nil, err
+	}
 	pkg, err := build.Import(path, srcDir, 0)
 	if err != nil {
 		return "", nil, err
