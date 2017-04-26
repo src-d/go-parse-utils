@@ -14,10 +14,39 @@ import (
 	"sync"
 )
 
-var (
-	goPath = os.Getenv("GOPATH")
-	goSrc  = filepath.Join(goPath, "src")
-)
+// ErrNotInGoPath is an error returned when a package is not in any of the
+// possible go paths.
+var ErrNotInGoPath = fmt.Errorf("parseutil: package is not in any of the go paths")
+
+// GoPath is the collection of all go paths.
+type GoPath []string
+
+// Abs returns the absolute path to a package. The go path in the absolute path
+// that will be returned is the first that contains the given package.
+func (gp GoPath) Abs(pkg string) (string, error) {
+	path, err := gp.PathOf(pkg)
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Join(path, "src", pkg), nil
+}
+
+// PathOf returns the first go path that contains the given package.
+func (gp GoPath) PathOf(pkg string) (string, error) {
+	for _, p := range gp {
+		if _, err := os.Stat(filepath.Join(p, "src", pkg)); err == nil {
+			return p, nil
+		} else if !os.IsNotExist(err) {
+			return "", err
+		}
+	}
+	return "", ErrNotInGoPath
+}
+
+// DefaultGoPath contains the default list of go paths provided either via
+// GOPATH environment variable or the default value.
+var DefaultGoPath = GoPath(filepath.SplitList(build.Default.GOPATH))
 
 // FileFilter returns true if the given file needs to be kept.
 type FileFilter func(pkgPath, file string, typ FileType) bool
@@ -86,7 +115,7 @@ func (i *Importer) Import(path string) (*types.Package, error) {
 // ImportWithFilters works like Import but filtering the source files to parse using
 // the passed FileFilters.
 func (i *Importer) ImportWithFilters(path string, filters FileFilters) (*types.Package, error) {
-	return i.ImportFromWithFilters(path, goSrc, 0, filters)
+	return i.ImportFromWithFilters(path, "", 0, filters)
 }
 
 // ImportFrom returns the imported package for the given import
@@ -115,7 +144,15 @@ func (i *Importer) ImportFromWithFilters(path, srcDir string, mode types.ImportM
 	}
 
 	// If it's not on the GOPATH use the default importer instead
-	if !strings.HasPrefix(root, goPath) {
+	useDefaultImporter := true
+	for _, p := range DefaultGoPath {
+		if strings.HasPrefix(root, p) {
+			useDefaultImporter = false
+			break
+		}
+	}
+
+	if useDefaultImporter {
 		i.mut.Lock()
 		defer i.mut.Unlock()
 

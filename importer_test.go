@@ -1,7 +1,6 @@
 package parseutil_test
 
 import (
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -13,20 +12,24 @@ import (
 
 const project = "gopkg.in/src-d/go-parse-utils.v1"
 
-var (
-	goPath = os.Getenv("GOPATH")
-	goSrc  = filepath.Join(goPath, "src")
-)
-
-var projectPath = filepath.Join(goSrc, project)
+var projectPath = func() string {
+	path, err := parseutil.DefaultGoPath.Abs(project)
+	if err != nil {
+		panic(err)
+	}
+	return path
+}()
 
 func projectFile(path string) string {
 	return filepath.Join(projectPath, path)
 }
 
 func TestGetSourceFiles(t *testing.T) {
-	_, paths, err := parseutil.NewImporter().GetSourceFiles(project, goPath, parseutil.FileFilters{})
-	require.Nil(t, err)
+	projPath, err := parseutil.DefaultGoPath.PathOf(project)
+	require.NoError(t, err)
+	_, paths, err := parseutil.NewImporter().
+		GetSourceFiles(project, projPath, parseutil.FileFilters{})
+	require.NoError(t, err)
 	expected := []string{
 		projectFile("ast.go"),
 		projectFile("importer.go"),
@@ -72,7 +75,7 @@ func TestImportGoogleGrpc(t *testing.T) {
 
 func TestImportFrom(t *testing.T) {
 	imp := parseutil.NewImporter()
-	pkg, err := imp.ImportFrom(project, goSrc, 0)
+	pkg, err := imp.ImportFrom(project, "", 0)
 	require.Nil(t, err)
 	require.Equal(t, "parseutil", pkg.Name())
 }
