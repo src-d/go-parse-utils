@@ -47,6 +47,7 @@ func (gp GoPath) PathOf(pkg string) (string, error) {
 // DefaultGoPath contains the default list of go paths provided either via
 // GOPATH environment variable or the default value.
 var DefaultGoPath = GoPath(filepath.SplitList(build.Default.GOPATH))
+var DefaultGoRoot = build.Default.GOROOT
 
 // FileFilter returns true if the given file needs to be kept.
 type FileFilter func(pkgPath, file string, typ FileType) bool
@@ -146,7 +147,7 @@ func (i *Importer) ImportFromWithFilters(path, srcDir string, mode types.ImportM
 	// If it's not on the GOPATH use the default importer instead
 	useDefaultImporter := true
 	for _, p := range DefaultGoPath {
-		if strings.HasPrefix(root, p) {
+		if strings.HasPrefix(root, p) && !strings.HasPrefix(root, DefaultGoRoot) {
 			useDefaultImporter = false
 			break
 		}
